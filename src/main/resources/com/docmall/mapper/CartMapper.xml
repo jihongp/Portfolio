@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.docmall.mapper.CartMapper">
+
+	<insert id="cartAdd">
+		merge into cart_tbl c
+		using dual
+		on (c.mem_id = #{mem_id} and c.pdt_num = #{pdt_num})
+		when matched then
+		 update set c.cart_amount = c.cart_amount + #{cart_amount}
+		when not matched then
+		 insert (cart_code, pdt_num, mem_id, cart_amount) 
+		 values(seq_cart.nextval, #{pdt_num}, #{mem_id}, #{cart_amount})
+	</insert>
+	
+	<select id="cartList" resultType="com.docmall.domain.CartListVO">
+		select c.cart_code, c.pdt_num, c.mem_id, c.cart_amount, p.pdt_img, p.pdt_name, p.pdt_price
+		from cart_tbl c inner join product_tbl p
+		on c.pdt_num = p.pdt_num
+		and c.mem_id = #{mem_id}
+	</select>
+	
+	<update id="cartEdit">
+		update cart_tbl set cart_amount = #{cart_amount}
+		where cart_code = #{cart_code}
+	</update>
+	
+	<delete id="cartdelete">
+		delete from cart_tbl where cart_code = #{cart_code}
+	</delete>
+	
+	<delete id="cartdeletebyUserID">
+		delete from cart_tbl where mem_id = #{mem_id}
+	</delete>
+	
+</mapper>

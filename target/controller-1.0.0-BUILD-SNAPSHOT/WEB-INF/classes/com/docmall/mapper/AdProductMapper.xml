@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.docmall.mapper.AdProductMapper">
+	
+	<select id="mainCategory" resultType="com.docmall.domain.CategoryVO">
+		select cate_code_pk, cate_code_prt, cate_name from category_tbl where cate_code_prt is null	
+	</select>
+	
+	<select id="subCategory" resultType="com.docmall.domain.CategoryVO">
+		select cate_code_pk, cate_code_prt, cate_name from category_tbl where cate_code_prt = #{cate_code_pk}	
+	</select>
+	
+	<insert id="Insert">
+		insert into product_tbl(pdt_num, cate_code, cate_code_prt, pdt_name, pdt_price, pdt_discount, pdt_company, pdt_detail, pdt_img, pdt_amount, pdt_buy) 
+values(seq_product.nextval, #{cate_code}, #{cate_code_prt}, #{pdt_name}, #{pdt_price}, #{pdt_discount}, #{pdt_company}, #{pdt_detail}, #{pdt_img}, #{pdt_amount}, #{pdt_buy})
+	</insert>
+	
+	
+	<sql id="criteria">
+	<trim prefix="(" suffix=") and" prefixOverrides="or">
+		<foreach item="type" collection="typeArr">
+				<trim prefix="or">
+					<choose>
+						<when test="type == 'N'.toString()">
+							pdt_name like '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'D'.toString()">
+							pdt_detail like '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'C'.toString()">
+							pdt_company like '%'||#{keyword}||'%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>  			
+		</trim>
+	</sql>
+	
+	<select id="getListWithPaging" resultType="com.docmall.domain.ProductVO">
+		<![CDATA[
+		select pdt_num, cate_code, cate_code_prt, pdt_name, pdt_price, pdt_discount, pdt_company, pdt_detail, pdt_img, pdt_amount, pdt_buy, pdt_date_sub, pdt_date_up
+	  	from 
+	      (
+	      select /*+INDEX_DESC(product_tbl SYS_C007384) */
+	        rownum rn, pdt_num, cate_code, cate_code_prt, pdt_name, pdt_price, pdt_discount, pdt_company, pdt_detail, pdt_img, pdt_amount, pdt_buy, pdt_date_sub, pdt_date_up
+	      from 
+	        product_tbl
+	  		where 
+	  	]]> 	
+	  			<include refid="criteria"></include>
+	  		
+	  	<![CDATA[	  		
+	  		 rownum <= #{pageNum} * #{amount}
+	  		
+	      )
+	      
+	  		where rn > (#{pageNum} -1) * #{amount} 
+	  	]]> 
+	</select>
+	
+	<select id="getTotalCount" resultType="int">
+	 select count(*) from product_tbl where
+	
+	 <include refid="criteria"></include>
+	
+	 pdt_num > 0
+	</select>
+	
+	
+	<select id="edit" resultType="com.docmall.domain.ProductVO">
+	 select pdt_num, cate_code, cate_code_prt, pdt_name, pdt_price, pdt_discount, pdt_company, pdt_detail, pdt_img, pdt_amount, pdt_buy, pdt_date_sub, pdt_date_up from product_tbl
+     where pdt_num = #{pdt_num}
+	</select>
+	
+	<update id="editOk">
+		update product_tbl set cate_code = #{cate_code}, cate_code_prt = #{cate_code_prt}, pdt_name = #{pdt_name}, pdt_price = #{pdt_price}, pdt_discount = #{pdt_discount}, pdt_company = #{pdt_company}, pdt_detail = #{pdt_detail}, pdt_img = #{pdt_img}, pdt_amount = #{pdt_amount}, pdt_buy = #{pdt_buy}, pdt_date_sub = sysdate
+		where pdt_num = #{pdt_num}
+	</update>
+
+	<delete id="delete">
+		delete from product_tbl where pdt_num = #{pdt_num}
+	</delete>
+
+</mapper>

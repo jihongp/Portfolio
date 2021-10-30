@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.docmall.mapper.ChartMapper">
+
+	<select id="getYearSales" resultType="com.docmall.domain.StatChartVO">
+		SELECT SUM(ODR_TOTAL_PRICE) total, TO_CHAR(ODR_DATE, 'YYYY') year FROM ORDER_TBL
+		GROUP BY TO_CHAR(ODR_DATE, 'YYYY')
+		ORDER BY TO_CHAR(ODR_DATE, 'YYYY')
+	</select>
+
+</mapper>
